@@ -1,5 +1,7 @@
 import { createSlice, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
 
+import { defaultRoles } from '../config'
+
 const resetRolesR: CaseReducer<GameState> = (state) => {
     return { ...state, pickedRoles: _resetPickedRoles(state.availableRoles) }
 }
@@ -26,30 +28,6 @@ const dealRolesR: CaseReducer<GameState> = (state) => {
 
     return { ...state, players, deal: initialState.deal }
 }
-
-const defaultRoles = {
-    werwolf: "Werwolf",
-    dorfbewohner: "Dorfbewohner",
-    seherin: "Seherin",
-    hexe: "Hexe",
-    jaeger: "Jäger",
-    armor: "Armor",
-    heiler: "Heiler",
-    prinz: "Prinz",
-
-    AlterMann: "Alter Mann",
-    depp: "Dorfdepp",
-    drache: "Drache (Joker)",
-    bursche: "Harter Bursche",
-    lykanthrophin: "Lykanthrophin",
-    post: "Postbote (Joker)",
-    priest: "Priester",
-    lehrling: "Seherlehrling",
-    traumwolf: "Traumwolf (Joker)",
-    whiteWolf: "Weißer Wolf",
-    wolfsjunges: "Wolfsjunges",
-    zahnarzt: "Zahnarzt",
-};
 
 let savedCustomRoles = JSON.parse(localStorage.getItem("customRoles") || "{}");
 
@@ -128,6 +106,27 @@ const gameSlice = createSlice({
             };
         },
 
+        deleteCustomRole(state, action: PayloadAction<string>): GameState {
+            const roleID = action.payload;
+            let customRoles = { ...state.customRoles };
+            delete customRoles[roleID];
+      
+            localStorage.setItem("customRoles", JSON.stringify(customRoles));
+
+            let availableRoles = { ...state.availableRoles };
+            delete availableRoles[roleID];
+
+            let pickedRoles = { ...state.pickedRoles };
+            delete pickedRoles[roleID];
+
+            return {
+                ...state,
+                availableRoles: { ...availableRoles },
+                customRoles: { ...customRoles },
+                pickedRoles: { ...pickedRoles },
+            };
+        },
+
         resetRoles: resetRolesR,
         dealRoles: dealRolesR,
 
@@ -173,5 +172,5 @@ const gameSlice = createSlice({
 })
 
 const { actions, reducer } = gameSlice
-export const { addRole, removeRole, createCustomRole, resetRoles, dealRoles, currentRoleToggleVisibility, dealNextRole, togglePlayerAlive, fullReset } = actions
+export const { addRole, removeRole, createCustomRole, deleteCustomRole, resetRoles, dealRoles, currentRoleToggleVisibility, dealNextRole, togglePlayerAlive, fullReset } = actions
 export default reducer
