@@ -1,6 +1,7 @@
 
 declare interface GameState {
     availableRoles: { [key: string]: string }
+    customRoles: { [key: string]: string }
     pickedRoles: { [key: string]: number }
     players: Player[]
     deal: {

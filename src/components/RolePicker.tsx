@@ -1,7 +1,7 @@
 import { connect, ConnectedProps } from 'react-redux'
 import { List, ListItem, Button, Input } from 'react-onsenui';
 
-import { addRole, removeRole, createRole } from '../reducers/game'
+import { addRole, removeRole, createCustomRole } from '../reducers/game'
 
 import styles from './RolePicker.module.css';
 
@@ -10,13 +10,13 @@ function mapStateToProps(state: RootState) {
   return { availableRoles: state.game.availableRoles, pickedRoles: state.game.pickedRoles }
 }
 
-const mapDispatch = { addRole, removeRole, createRole }
+const mapDispatch = { addRole, removeRole, createCustomRole }
 const connector = connect(mapStateToProps, mapDispatch)
 export default connector(RolePicker);
 
 type RolePickerProps = ConnectedProps<typeof connector>
 
-function RolePicker({ availableRoles, pickedRoles, addRole, removeRole, createRole }: RolePickerProps) {
+function RolePicker({ availableRoles, pickedRoles, addRole, removeRole, createCustomRole }: RolePickerProps) {
 
   let availableRolesItems = (roleKey: string, idx: number) => (
     <ListItem key={roleKey}>
@@ -29,10 +29,10 @@ function RolePicker({ availableRoles, pickedRoles, addRole, removeRole, createRo
     </ListItem>
   )
 
-  let _createRole = () => {
+  let _createCustomRole = () => {
     let inputField = document.getElementById('new_role')
     let role_name = (inputField as HTMLInputElement).value
-    createRole(role_name)
+    createCustomRole(role_name)
   }
 
   let footer = <ListItem key={"new_role"}>
@@ -44,7 +44,7 @@ function RolePicker({ availableRoles, pickedRoles, addRole, removeRole, createRo
         placeholder='new role name' float />
     </div>
     <div className="right">
-      <Button onClick={_createRole}>+</Button>
+      <Button onClick={_createCustomRole}>+</Button>
     </div>
   </ListItem>
 
