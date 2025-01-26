@@ -32,11 +32,11 @@ ons-list-item.isDead {
   background-color: lightgray;
 }
 
-.isDead > div {
+.isDead>div {
   text-decoration-line: line-through;
 }
 
-.player > div {
+.player>div {
   justify-content: space-between;
 }
 
@@ -44,4 +44,44 @@ ons-list-item:not(.isDead) button {
   color: white;
   border-color: #0076ff;
   background-color: #0076ff;
+}
+
+.checkbox--noborder__checkmark:after {
+  border-right-style: none !important;
+  border-top-style: none !important;
+}
+
+.button.button--effect {
+  margin-right: 12px;
+}
+
+.button.button--effect>ons-icon {
+  margin-left: 6px;
+}
+
+.effect-input {
+  background-color: white;
+  margin-left: 50px;
+}
+
+.effect-input ons-input {
+  padding: 6px 0;
+}
+
+.effect-input form {
+  display: flex;
+  justify-content: space-between;
+}
+
+ons-list-item button.button--dialog,
+.button--dialog {
+  background-color: transparent;
+  border: none;
+  color: gray;
+  padding: 12px 15px;
+}
+
+.button--dialog:active {
+  background-color: #0076ff;
+  color: white;
 }

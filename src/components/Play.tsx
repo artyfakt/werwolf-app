@@ -1,14 +1,14 @@
 import React from 'react'
-import { Fab, Icon, Page, List, ListItem, AlertDialog, Button } from 'react-onsenui';
+import { Fab, Icon, Page, List, ListItem, ListTitle, AlertDialog, Button, ToolbarButton, Dialog, Checkbox, Input } from 'react-onsenui';
 import { connect, ConnectedProps } from 'react-redux'
 
-import { togglePlayerAlive, fullReset } from '../reducers/game'
+import { togglePlayerAlive, fullReset, togglePlayerEffect, createEffect, deleteEffect } from '../reducers/game'
 import { navTo } from '../reducers/ui'
 import Toolbar from './Toolbar';
 
 
-const mapStateToProps = (state: RootState) => ({ players: state.game.players, availableRoles: state.game.availableRoles })
-const mapDispatch = { togglePlayerAlive, fullReset, navTo }
+const mapStateToProps = (state: RootState) => ({ players: state.game.players, availableRoles: state.game.availableRoles, availableEffects: state.game.availableEffects })
+const mapDispatch = { togglePlayerAlive, fullReset, navTo, togglePlayerEffect, createEffect, deleteEffect }
 const connector = connect(mapStateToProps, mapDispatch)
 
 
@@ -18,12 +18,12 @@ const pStyle: React.CSSProperties = {
 };
 
 type PlayProps = ConnectedProps<typeof connector>
-type PlayState = { endAlertIsOpen: boolean }
+type PlayState = { endAlertIsOpen: boolean, playerDetailsAreOpen: boolean, selectedPlayer: number }
 
 class Play extends React.Component<PlayProps, PlayState> {
   constructor(props: PlayProps) {
     super(props)
-    this.state = { endAlertIsOpen: false }
+    this.state = { endAlertIsOpen: false, playerDetailsAreOpen: false, selectedPlayer: 0 }
   }
 
   endGameOk() {
@@ -36,9 +36,21 @@ class Play extends React.Component<PlayProps, PlayState> {
     this.setState({ endAlertIsOpen: false });
   }
 
+  playerDetailsClose() {
+    this.setState({ playerDetailsAreOpen: false })
+  }
+
+  submitNewEffect(event: React.SyntheticEvent) {
+    event.preventDefault()
+    const target = event.target as typeof event.target & { newEffect: { value: string } }
+    const effect = target.newEffect.value
+    this.props.createEffect({ newEffect: effect, playerID: this.state.selectedPlayer })
+    target.newEffect.value = ""
+  }
+
   render() {
-    let { players, togglePlayerAlive } = this.props
-    let { endAlertIsOpen } = this.state
+    let { players, togglePlayerAlive, togglePlayerEffect, deleteEffect } = this.props
+    let { endAlertIsOpen, playerDetailsAreOpen, selectedPlayer } = this.state
     return (
       <Page
         renderToolbar={() => (<Toolbar />)}
@@ -61,9 +73,20 @@ class Play extends React.Component<PlayProps, PlayState> {
                   {playerID + 1}: {this.props.availableRoles[player.role]}
                 </div>
                 <div>
+                  {player.effects.map(effectID => {
+                    return (
+                      <Button key={effectID} className="button--outline button--effect" onClick={() => togglePlayerEffect({ playerID: playerID, effectID: effectID })}>
+                        {this.props.availableEffects[effectID]}
+                        <Icon icon="fa-close" />
+                      </Button>
+                    )
+                  })}
                   <button onClick={() => togglePlayerAlive(playerID)} className=" button button--outline">
                     <Icon icon={player.alive ? 'skull-crossbones' : 'medkit'} />
                   </button>
+                  <ToolbarButton>
+                    <Icon icon="bars" onClick={() => this.setState({ playerDetailsAreOpen: true, selectedPlayer: playerID })} />
+                  </ToolbarButton>
                 </div>
               </ListItem>
             )}
@@ -85,7 +108,46 @@ class Play extends React.Component<PlayProps, PlayState> {
             </Button>
           </div>
         </AlertDialog>
-      </Page>
+
+        <Dialog isOpen={playerDetailsAreOpen} isCancelable={true} onCancel={this.playerDetailsClose.bind(this)}>
+          <ListTitle>
+            {selectedPlayer + 1}: {this.props.availableRoles[players[selectedPlayer].role]}
+          </ListTitle>
+          <List
+            dataSource={Object.keys(this.props.availableEffects)}
+            renderRow={(effectID: string) => (
+              <ListItem key={effectID}>
+                <label className="left">
+                  <Checkbox
+                    inputId={effectID}
+                    checked={players[selectedPlayer].effects.includes(effectID)}
+                    onChange={() => togglePlayerEffect({ playerID: selectedPlayer, effectID })}
+                    modifier="noborder"
+                  />
+                </label>
+                <label htmlFor={effectID}>
+                  {this.props.availableEffects[effectID]}
+                </label>
+                <button className="right button--dialog" onClick={() => deleteEffect(effectID)}>
+                  <Icon icon="trash" />
+                </button>
+              </ListItem>
+            )}
+            renderFooter={() => (
+              <div className="effect-input">
+                <form onSubmit={this.submitNewEffect.bind(this)}>
+                  <Input name="newEffect" placeholder="Neuer Effekt" autocomplete="off" />
+                  <button type="submit" className="right button--dialog">
+                    <Icon icon="plus" />
+                  </button>
+                </form>
+              </div>
+            )}
+          />
+          <Button onClick={this.playerDetailsClose.bind(this)} className="alert-dialog-button">Schließen</Button>
+        </Dialog>
+
+      </Page >
     );
   }
 }

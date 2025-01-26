@@ -3,6 +3,7 @@ declare interface GameState {
     availableRoles: { [key: string]: string }
     customRoles: { [key: string]: string }
     pickedRoles: { [key: string]: number }
+    availableEffects: { [key: string]: string }
     players: Player[]
     deal: {
         activeRoleIdx: number
@@ -14,6 +15,7 @@ declare interface GameState {
 declare type Player = {
     role: string
     alive: boolean
+    effects: string[]
 }
 
 declare type Page = "prepare" | "deal" | "play" | "about"

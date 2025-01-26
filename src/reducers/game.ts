@@ -17,7 +17,7 @@ const dealRolesR: CaseReducer<GameState> = (state) => {
 
     for (let roleKey in state.pickedRoles) {
         for (let i = 0; i < state.pickedRoles[roleKey]; i++) {
-            players.push({ role: roleKey, alive: true })
+            players.push({ role: roleKey, alive: true, effects: [] })
         }
     }
 
@@ -32,7 +32,7 @@ const dealRolesR: CaseReducer<GameState> = (state) => {
 let savedCustomRoles = JSON.parse(localStorage.getItem("customRoles") || "{}");
 
 Object.keys(savedCustomRoles).forEach((roleID: string) => {
-  if (roleID in defaultRoles) delete savedCustomRoles[roleID];
+    if (roleID in defaultRoles) delete savedCustomRoles[roleID];
 });
 
 const initialRoles = { ...defaultRoles, ...savedCustomRoles };
@@ -43,9 +43,13 @@ const initialState: GameState = function () {
         availableRoles: { ...initialRoles },
         customRoles: { ...savedCustomRoles },
         pickedRoles: _resetPickedRoles(initialRoles),
+        availableEffects: {
+            // verliebt: "Verliebt",
+            // betrunken: "Betrunken",
+        },
         players: [
-            // { role: 'dorfbewohner', alive: false },
-            // { role: 'werwolf', alive: true },
+            // { role: 'dorfbewohner', alive: false, effects: [] },
+            // { role: 'werwolf', alive: true, effects: [] },
         ],
         deal: {
             activeRoleIdx: 0,
@@ -89,7 +93,7 @@ const gameSlice = createSlice({
 
             let customRoles = { ...state.customRoles };
             customRoles[newRoleID] = newRoleName;
-      
+
             localStorage.setItem("customRoles", JSON.stringify(customRoles));
 
             return {
@@ -110,7 +114,7 @@ const gameSlice = createSlice({
             const roleID = action.payload;
             let customRoles = { ...state.customRoles };
             delete customRoles[roleID];
-      
+
             localStorage.setItem("customRoles", JSON.stringify(customRoles));
 
             let availableRoles = { ...state.availableRoles };
@@ -161,6 +165,43 @@ const gameSlice = createSlice({
             return state
         },
 
+        createEffect(state, action: PayloadAction<{ newEffect: string, playerID: number }>): GameState {
+            const newEffectName = action.payload.newEffect
+            const newEffectID = newEffectName.replaceAll(/[^\w]/g, "").toLowerCase();
+            const playerID = action.payload.playerID
+
+            if (newEffectID in state.availableEffects) {
+                // do nothing
+            } else {
+                state.availableEffects[newEffectID] = newEffectName
+            }
+
+            const effects = state.players[playerID].effects
+            const effectActive = effects.includes(newEffectID)
+            state.players[playerID].effects = effectActive ? [...effects] : [...effects, newEffectID]
+
+            return state
+        },
+
+        deleteEffect(state, action: PayloadAction<string>): GameState {
+            const effectID = action.payload
+            state.players.forEach(player => {
+                const effects = player.effects.filter(effect => effect !== effectID)
+                player.effects = [...effects]
+            })
+            delete state.availableEffects[effectID]
+            return state
+        },
+
+        togglePlayerEffect(state, action: PayloadAction<{ playerID: number, effectID: string }>): GameState {
+            const playerID = action.payload.playerID
+            const effectID = action.payload.effectID
+            const effects = state.players[playerID].effects
+            const effectActive = effects.includes(effectID)
+            state.players[playerID].effects = effectActive ? [...effects.filter(effect => effect !== effectID)] : [...effects, effectID]
+            return state
+        },
+
         fullReset(state): GameState {
             return {
                 ...initialState,
@@ -172,5 +213,5 @@ const gameSlice = createSlice({
 })
 
 const { actions, reducer } = gameSlice
-export const { addRole, removeRole, createCustomRole, deleteCustomRole, resetRoles, dealRoles, currentRoleToggleVisibility, dealNextRole, togglePlayerAlive, fullReset } = actions
+export const { addRole, removeRole, createCustomRole, deleteCustomRole, resetRoles, dealRoles, currentRoleToggleVisibility, dealNextRole, togglePlayerAlive, fullReset, createEffect, deleteEffect, togglePlayerEffect } = actions
 export default reducer
