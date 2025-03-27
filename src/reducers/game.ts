@@ -59,6 +59,11 @@ const initialState: GameState = function () {
     }
 }();
 
+export const generateEffectID = (effectName: string): string => {
+    const effectID = effectName.replaceAll(/[^\w]/g, "").toLowerCase()
+    return effectID
+}
+
 const gameSlice = createSlice({
     name: 'game',
     initialState,
@@ -165,20 +170,15 @@ const gameSlice = createSlice({
             return state
         },
 
-        createEffect(state, action: PayloadAction<{ newEffect: string, playerID: number }>): GameState {
+        createEffect(state, action: PayloadAction<{ newEffect: string }>): GameState {
             const newEffectName = action.payload.newEffect
-            const newEffectID = newEffectName.replaceAll(/[^\w]/g, "").toLowerCase();
-            const playerID = action.payload.playerID
+            const newEffectID = generateEffectID(newEffectName)
 
             if (newEffectID in state.availableEffects) {
-                // do nothing
+                alert(`Effect "${newEffectName}" with ID "${newEffectID}" already exists`)
             } else {
                 state.availableEffects[newEffectID] = newEffectName
             }
-
-            const effects = state.players[playerID].effects
-            const effectActive = effects.includes(newEffectID)
-            state.players[playerID].effects = effectActive ? [...effects] : [...effects, newEffectID]
 
             return state
         },
@@ -193,12 +193,19 @@ const gameSlice = createSlice({
             return state
         },
 
-        togglePlayerEffect(state, action: PayloadAction<{ playerID: number, effectID: string }>): GameState {
+        togglePlayerEffect(state, action: PayloadAction<{ playerID: number, effectID: string, disable?: ("on"|"off") }>): GameState {
             const playerID = action.payload.playerID
             const effectID = action.payload.effectID
             const effects = state.players[playerID].effects
+            const flag = action.payload.disable
             const effectActive = effects.includes(effectID)
-            state.players[playerID].effects = effectActive ? [...effects.filter(effect => effect !== effectID)] : [...effects, effectID]
+
+            if (effectActive && flag !== "off") {
+                state.players[playerID].effects = [...effects.filter(effect => effect !== effectID)]
+            } else if (!effectActive && flag !== "on") {
+                state.players[playerID].effects = [...effects, effectID ]
+            }
+
             return state
         },
 

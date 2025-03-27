@@ -6,6 +6,8 @@ import { togglePlayerAlive, fullReset, togglePlayerEffect, createEffect, deleteE
 import { navTo } from '../reducers/ui'
 import Toolbar from './Toolbar';
 
+import { generateEffectID } from '../reducers/game';
+
 
 const mapStateToProps = (state: RootState) => ({ players: state.game.players, availableRoles: state.game.availableRoles, availableEffects: state.game.availableEffects })
 const mapDispatch = { togglePlayerAlive, fullReset, navTo, togglePlayerEffect, createEffect, deleteEffect }
@@ -44,7 +46,12 @@ class Play extends React.Component<PlayProps, PlayState> {
     event.preventDefault()
     const target = event.target as typeof event.target & { newEffect: { value: string } }
     const effect = target.newEffect.value
-    this.props.createEffect({ newEffect: effect, playerID: this.state.selectedPlayer })
+
+    if (effect !== "") {
+      this.props.createEffect({ newEffect: effect })
+      this.props.togglePlayerEffect({ playerID: this.state.selectedPlayer, effectID: generateEffectID(effect), disable: "off"})
+    }
+
     target.newEffect.value = ""
   }
 
