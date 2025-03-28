@@ -173,13 +173,9 @@ const gameSlice = createSlice({
         createEffect(state, action: PayloadAction<{ newEffect: string }>): GameState {
             const newEffectName = action.payload.newEffect
             const newEffectID = generateEffectID(newEffectName)
-
-            if (newEffectID in state.availableEffects) {
-                alert(`Effect "${newEffectName}" with ID "${newEffectID}" already exists`)
-            } else {
+            if (!(newEffectID in state.availableEffects)) {
                 state.availableEffects[newEffectID] = newEffectName
             }
-
             return state
         },
 
@@ -193,19 +189,12 @@ const gameSlice = createSlice({
             return state
         },
 
-        togglePlayerEffect(state, action: PayloadAction<{ playerID: number, effectID: string, disable?: ("on"|"off") }>): GameState {
+        togglePlayerEffect(state, action: PayloadAction<{ playerID: number, effectID: string }>): GameState {
             const playerID = action.payload.playerID
             const effectID = action.payload.effectID
             const effects = state.players[playerID].effects
-            const flag = action.payload.disable
             const effectActive = effects.includes(effectID)
-
-            if (effectActive && flag !== "off") {
-                state.players[playerID].effects = [...effects.filter(effect => effect !== effectID)]
-            } else if (!effectActive && flag !== "on") {
-                state.players[playerID].effects = [...effects, effectID ]
-            }
-
+            state.players[playerID].effects = effectActive ? [...effects.filter(effect => effect !== effectID)] : [...effects, effectID ]
             return state
         },
 

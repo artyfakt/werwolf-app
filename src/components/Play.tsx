@@ -2,17 +2,13 @@ import React from 'react'
 import { Fab, Icon, Page, List, ListItem, ListTitle, AlertDialog, Button, ToolbarButton, Dialog, Checkbox, Input } from 'react-onsenui';
 import { connect, ConnectedProps } from 'react-redux'
 
-import { togglePlayerAlive, fullReset, togglePlayerEffect, createEffect, deleteEffect } from '../reducers/game'
+import { togglePlayerAlive, fullReset, togglePlayerEffect, createEffect, deleteEffect, generateEffectID } from '../reducers/game'
 import { navTo } from '../reducers/ui'
 import Toolbar from './Toolbar';
-
-import { generateEffectID } from '../reducers/game';
-
 
 const mapStateToProps = (state: RootState) => ({ players: state.game.players, availableRoles: state.game.availableRoles, availableEffects: state.game.availableEffects })
 const mapDispatch = { togglePlayerAlive, fullReset, navTo, togglePlayerEffect, createEffect, deleteEffect }
 const connector = connect(mapStateToProps, mapDispatch)
-
 
 const pStyle: React.CSSProperties = {
   textAlign: 'center',
@@ -46,11 +42,15 @@ class Play extends React.Component<PlayProps, PlayState> {
     event.preventDefault()
     const target = event.target as typeof event.target & { newEffect: { value: string } }
     const effect = target.newEffect.value
+    const effectID = generateEffectID(effect)
 
-    if (effect !== "") {
-      this.props.createEffect({ newEffect: effect })
-      this.props.togglePlayerEffect({ playerID: this.state.selectedPlayer, effectID: generateEffectID(effect), disable: "off"})
+    if (effectID in this.props.availableEffects) {
+      alert(`Effect "${effect}" with ID "${effectID}" already exists`)
+      return
     }
+
+    this.props.createEffect({ newEffect: effect })
+    this.props.togglePlayerEffect({ playerID: this.state.selectedPlayer, effectID })
 
     target.newEffect.value = ""
   }
