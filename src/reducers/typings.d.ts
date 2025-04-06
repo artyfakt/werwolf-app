@@ -3,13 +3,18 @@ declare interface GameState {
     availableRoles: { [key: string]: string }
     customRoles: { [key: string]: string }
     pickedRoles: { [key: string]: number }
-    availableEffects: { [key: string]: string }
+    availableEffects: { [key: string]: Effect }
     players: Player[]
     deal: {
         activeRoleIdx: number
         roleWasVisible: boolean
         roleIsVisible: boolean
     }
+}
+
+declare type Effect = {
+    name: string
+    icon: string
 }
 
 declare type Player = {

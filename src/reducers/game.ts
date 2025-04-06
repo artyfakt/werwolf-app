@@ -170,11 +170,12 @@ const gameSlice = createSlice({
             return state
         },
 
-        createEffect(state, action: PayloadAction<{ newEffect: string }>): GameState {
-            const newEffectName = action.payload.newEffect
+        createEffect(state, action: PayloadAction<{ newEffect: Effect }>): GameState {
+            const newEffectName = action.payload.newEffect.name
+            const newEffectIcon = action.payload.newEffect.icon
             const newEffectID = generateEffectID(newEffectName)
             if (!(newEffectID in state.availableEffects)) {
-                state.availableEffects[newEffectID] = newEffectName
+                state.availableEffects[newEffectID] = { name: newEffectName, icon: newEffectIcon }
             }
             return state
         },
