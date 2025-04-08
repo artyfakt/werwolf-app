@@ -48,6 +48,11 @@ class Play extends React.Component<PlayProps, PlayState> {
     this.newEffectFormClose()
     const target = event.target as typeof event.target & { newEffectName: { value: string }, newEffectIcon: { value: string } }
     const effect = { name: target.newEffectName.value, icon: target.newEffectIcon.value }
+
+    if (!effect.name) {
+      effect.name = effect.icon ? effect.icon : (Math.random() + 1).toString(36).substring(2)
+    }
+
     const effectID = generateEffectID(effect.name)
 
     if (effectID in this.props.availableEffects) {
